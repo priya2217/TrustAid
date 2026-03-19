@@ -51,8 +51,8 @@ const LandingPage: React.FC = () => {
   ];
 
   const handleGetStarted = () => {
-    if (user && user.user_metadata?.role) {
-      switch (user.user_metadata.role) {
+    if (user?.role) {
+      switch (user.role) {
         case 'donor':
           navigate('/donor');
           return;

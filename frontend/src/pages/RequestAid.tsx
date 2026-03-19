@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, Camera, FileText, Shield, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { createRequest } from '../api';
 
 const RequestAid: React.FC = () => {
   const { user } = useAuth();
@@ -23,6 +24,8 @@ const RequestAid: React.FC = () => {
     ocrData: null,
     confidence: 0
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
 
   const categories = [
     { id: 'medical', name: 'Medical Treatment' },
@@ -55,10 +58,55 @@ const RequestAid: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting request:', formData);
-    // Implementation for request submission
+    if (!user?.id) {
+      setSubmitMessage('Please sign in as a beneficiary before submitting a request.');
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitMessage('');
+
+    try {
+      await createRequest({
+        title: formData.title,
+        amount: Number(formData.amount),
+        category: formData.category,
+        urgency: formData.urgency,
+        description: formData.description,
+        location: formData.location,
+        ownerId: user.id,
+        aiScore: aiAnalysis.confidence || 90,
+        ngoApproved: false,
+        fundedAmount: 0,
+        status: 'pending',
+      });
+      setSubmitMessage('Your aid request has been submitted to the MongoDB backend.');
+      setStep(1);
+      setFormData({
+        title: '',
+        amount: '',
+        category: 'medical',
+        urgency: 'medium',
+        description: '',
+        location: '',
+        idFront: null,
+        idBack: null,
+        selfie: null,
+        supportingDocs: [],
+      });
+      setAiAnalysis({
+        idVerified: false,
+        faceMatch: 0,
+        ocrData: null,
+        confidence: 0,
+      });
+    } catch (error) {
+      setSubmitMessage(error instanceof Error ? error.message : 'Failed to submit request.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const renderStep1 = () => (
@@ -358,9 +406,10 @@ const RequestAid: React.FC = () => {
         </button>
         <button
           onClick={handleSubmit}
+          disabled={submitting}
           className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
         >
-          Submit Request
+          {submitting ? 'Submitting...' : 'Submit Request'}
         </button>
       </div>
     </div>
@@ -399,6 +448,11 @@ const RequestAid: React.FC = () => {
 
       {/* Form Content */}
       <div className="bg-white rounded-xl border border-gray-200 p-8">
+        {submitMessage && (
+          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            {submitMessage}
+          </div>
+        )}
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}

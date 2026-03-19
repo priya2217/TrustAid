@@ -36,7 +36,7 @@
 | Layer      | Tech / Service                               |
 | ---------- | -------------------------------------------- |
 | Frontend   | React + Tailwind CSS (built on Bolt.new)     |
-| Backend    | Supabase (Postgres DB + Auth + Storage)      |
+| Backend    | Express + MongoDB (Auth + API)               |
 | AI Engine  | Python (DeepFace, Tesseract / Google Vision) |
 | Blockchain | Algorand (TestNet) + PyTeal + Pera Wallet    |
 | DevOps     | Netlify (CI/CD) • IONOS Domain via Entri     |
@@ -87,7 +87,7 @@ $ pip install -r requirements.txt
 $ python run.py               # test OCR & face match
 
 
-> *Note:* Add your API keys in .env files (VITE_SUPABASE_URL, ALGOD_API_KEY, etc.).
+> *Note:* The frontend talks to the local backend through `/api`. Add backend values in `backend/.env` when needed.
 
 ---
 
@@ -95,7 +95,7 @@ $ python run.py               # test OCR & face match
 
 * *Blockchain Challenge* ✔ — built entirely on *Algorand*
 * *Deploy Challenge* ✔ — auto‑deployed via *Netlify*
-* *Startup Challenge* ✔ — scalable on *Supabase* backend
+* *Startup Challenge* ✔ — scalable on *MongoDB* backend
 * *Custom Domain Challenge* ✔ — live at trustaid.io (IONOS)
 
 ---
