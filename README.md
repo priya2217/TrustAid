@@ -1,65 +1,118 @@
-# TrustAid
+# 🌍 TrustAid – AI + Blockchain‑Verified Donation Platform
 
-TrustAid is a full-stack donation platform focused on transparent aid delivery. The project currently uses a React frontend and an Express + MongoDB backend, with room for AI verification and blockchain integration as the product evolves.
+*TrustAid* is an end‑to‑end donation platform that makes every rupee traceable. By fusing *AI verification* (OCR + face matching + receipt analysis) with *Algorand smart contracts*, it gives donors cryptographic proof that their money helped real people.
 
-## Structure
+---
 
-```text
-TrustAid/
-├─ backend/   # Express + MongoDB API
-├─ frontend/  # React + Vite client
-└─ README.md  # Project overview
-```
+## 🚀 Live Demo
 
-## Tech Stack
+*URL:* [https://trustaid.bolt.new](https://trustaid.bolt.new)  (auto‑deployed via Netlify)
 
-- Frontend: React, Vite, Tailwind CSS
-- Backend: Express, MongoDB, Mongoose
-- Auth: MongoDB-backed email/password flow
-- Tooling: ESLint, TypeScript, Nodemon
+---
 
-## Local Setup
+## 📌 Features
 
-### 1. Backend
+* *🧠 AI Identity Verification*
+  ▸ OCR reads beneficiary ID cards
+  ▸ DeepFace matches selfie ↔ ID photo
+  ▸ Generates fraud‑prevention confidence score
+* *📄 NGO Proof + AI Receipt Check*
+  ▸ NGOs review requests and upload delivery proof
+  ▸ OCR validates receipt totals, dates, items
+  ▸ Second AI score rates proof reliability
+* *🔗 Algorand‑Powered Trust*
+  ▸ Donations flow through a PyTeal escrow contract
+  ▸ Transaction + IPFS CID written on‑chain
+  ▸ Donors can audit via AlgoExplorer
+* *💸 Donor Dashboard*
+  ▸ Browse verified aid requests
+  ▸ Fund with Pera Wallet in one click
+  ▸ Track images, receipts, and blockchain status in real time
 
-```bash
-cd backend
-npm install
-npm run dev
-```
+---
 
-Backend runs on `http://localhost:3001`.
+## 🏗 Tech Stack
 
-Required backend env file:
+| Layer      | Tech / Service                               |
+| ---------- | -------------------------------------------- |
+| Frontend   | React + Tailwind CSS (built on Bolt.new)     |
+| Backend    | Supabase (Postgres DB + Auth + Storage)      |
+| AI Engine  | Python (DeepFace, Tesseract / Google Vision) |
+| Blockchain | Algorand (TestNet) + PyTeal + Pera Wallet    |
+| DevOps     | Netlify (CI/CD) • IONOS Domain via Entri     |
 
-```env
-MONGO_URI=mongodb://127.0.0.1:27017/trustaid
-PORT=3001
-NODE_ENV=development
-```
+---
 
-### 2. Frontend
+## 🔁 Workflow — How It Works
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+1. *Beneficiary* uploads ID + selfie → AI verifies identity.
+2. Submits aid request → moves to *NGO* queue.
+3. *NGO* approves and later uploads photo + receipt → AI checks proof.
+4. Request marked *verified* → visible to *Donor*.
+5. *Donor* funds via Pera Wallet → PyTeal escrow holds & releases funds.
+6. Donor sees proof, AI scores, and on‑chain Tx hash — total transparency.
 
-Frontend runs on the Vite dev server and proxies `/api` requests to `http://localhost:3001`.
+---
 
-## Key Endpoints
+## 📂 Project Structure
 
-- `GET /api/health`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/requests`
-- `POST /api/requests`
-- `GET /api/users`
-- `GET /api/donations`
+text
+trustaid/
+├─ frontend/            # React app (Bolt.new)
+│  ├─ src/components/   # Reusable UI parts
+│  └─ ...
+├─ contracts/           # PyTeal smart contracts
+├─ ai‑verification/     # OCR & face‑match Python scripts
+├─ docs/                # Design docs & pitch deck
+└─ README.md            # You are here
 
-## Notes
 
-- Frontend-specific project details are in [frontend/README.md](/c:/Users/PRIYA/OneDrive/Attachments/Projects/BOLT/TrustAid/frontend/README.md).
-- The old Supabase-based auth flow was replaced with MongoDB-backed auth.
-- `backend/.env` is intentionally local and should not be committed.
+---
+
+## 🛠 Local Setup
+
+bash
+# 1️⃣ Clone repo
+$ git clone https://github.com/yourname/trustaid.git
+$ cd trustaid
+
+# 2️⃣ Frontend
+$ cd frontend
+$ npm install && npm start   # runs on http://localhost:3000
+
+# 3️⃣ AI scripts (optional)
+$ cd ../ai-verification
+$ python3 -m venv venv && source venv/bin/activate
+$ pip install -r requirements.txt
+$ python run.py               # test OCR & face match
+
+
+> *Note:* Add your API keys in .env files (VITE_SUPABASE_URL, ALGOD_API_KEY, etc.).
+
+---
+
+## 🏆 Hackathon Eligibility Checklist
+
+* *Blockchain Challenge* ✔ — built entirely on *Algorand*
+* *Deploy Challenge* ✔ — auto‑deployed via *Netlify*
+* *Startup Challenge* ✔ — scalable on *Supabase* backend
+* *Custom Domain Challenge* ✔ — live at trustaid.io (IONOS)
+
+---
+
+## 📜 License
+
+MIT — free to fork, improve, and fight donation fraud worldwide.
+
+---
+
+## 🙌 Contributors
+
+| Name           | Role                             |
+| -------------- | -------------------------------- |
+| Priya K | Frontend • UI / UX  |
+| Dinesh Kumar R | Backend • Blockchain |
+
+---
+
+> “Give with trust. Verify with TrustAid.”
