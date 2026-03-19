@@ -2,48 +2,11 @@ import { LogOut, Shield, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import type { AppUser } from '../types/auth';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [displayUser, setDisplayUser] = useState<AppUser | null>(user);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  // Fetch role from database when user changes
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (user) {
-        // First try to get from user metadata
-        const metadataRole = user.user_metadata?.role;
-
-        if (metadataRole) {
-          setUserRole(metadataRole);
-        } else {
-          // If not in metadata, fetch from database
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("role")
-            .eq("id", user.id)
-            .single();
-
-          if (profile?.role) {
-            setUserRole(profile.role);
-
-            // Update metadata to sync
-            await supabase.auth.updateUser({
-              data: { role: profile.role },
-            });
-          }
-        }
-      } else {
-        setUserRole(null);
-      }
-    };
-
-    fetchUserRole();
-  }, [user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -102,20 +65,15 @@ const Navbar: React.FC = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
                     <User className="relative h-5 w-5 text-gray-300 group-hover:text-white transition-colors duration-300" />
                   </button>
-                  
-                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-white">
-                    {displayUser.fullName || displayUser.email}
-                  </span>
 
-                  {displayUser.role && (
-                    <span className="relative text-xs px-3 py-1 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-full font-semibold border border-cyan-400/30 shadow-lg">
-                      {displayUser.role.charAt(0).toUpperCase() + displayUser.role.slice(1)}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-white">
+                      {user.fullName || user.email}
                     </span>
 
-                    {userRole && (
+                    {user.role && (
                       <span className="relative text-xs px-3 py-1 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-full font-semibold border border-cyan-400/30 shadow-lg">
-                        {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </span>
                     )}
                   </div>

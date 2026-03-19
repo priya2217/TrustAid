@@ -53,6 +53,8 @@
 6. Donor sees proof, AI scores, and on‑chain Tx hash — total transparency.
 
 ---
+Frontend runs on the Vite dev server and proxies `/api` requests to `http://localhost:3001`.
+For production builds or `vite preview`, create `frontend/.env` from `frontend/.env.example` and set `VITE_API_BASE_URL` to your backend URL, for example `http://localhost:3001/api` or your deployed API origin.
 
 ## 📂 Project Structure
 

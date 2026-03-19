@@ -1,7 +1,10 @@
 // src/api.ts - API utils for MongoDB backend
 import type { AppUser } from "./types/auth";
 
-const API_BASE = "/api";
+const configuredBase = import.meta.env.VITE_API_BASE_URL?.trim();
+const API_BASE = configuredBase
+  ? configuredBase.replace(/\/+$/, "")
+  : "/api";
 
 const normalizeRequest = (request: any) => ({
   ...request,
@@ -27,9 +30,22 @@ export const apiRequest = async (
     ...options,
   };
 
-  const response = await fetch(url, config);
+  let response: Response;
+
+  try {
+    response = await fetch(url, config);
+  } catch (error) {
+    throw new Error(
+      `Unable to reach API at ${url}. Check that the backend is running and VITE_API_BASE_URL is correct.`,
+      { cause: error },
+    );
+  }
+
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(
+      errorText || `API error: ${response.status} for ${url}`,
+    );
   }
   return response.json();
 };
