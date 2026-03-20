@@ -6,3 +6,5 @@ backend-run.log
 backend-run.err.log
 .DS_Store
 Thumbs.db
+frontend-run.err.log
+frontend-run.log
