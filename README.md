@@ -75,19 +75,12 @@ trustaid/
 
 bash
 # 1️⃣ Clone repo
-$ git clone https://github.com/yourname/trustaid.git
-$ cd trustaid
+$ git clone https://github.com/priya2217/TrustAid.git
+$ cd Trustaid
 
 # 2️⃣ Frontend
 $ cd frontend
 $ npm install && npm start   # runs on http://localhost:3000
-
-# 3️⃣ AI scripts (optional)
-$ cd ../ai-verification
-$ python3 -m venv venv && source venv/bin/activate
-$ pip install -r requirements.txt
-$ python run.py               # test OCR & face match
-
 
 > *Note:* Add your API keys in .env files (VITE_SUPABASE_URL, ALGOD_API_KEY, etc.).
 
