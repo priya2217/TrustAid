@@ -1,99 +1,85 @@
-import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
+
+type AuthStage = "loading" | "error";
+
+const ROLE_ROUTES: Record<string, string> = {
+  donor: "/donor",
+  beneficiary: "/beneficiary",
+  ngo: "/ngo",
+};
 
 const OauthCallback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const [stage, setStage] = useState<AuthStage>("loading");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-    const handleCallback = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) {
-        navigate('/login');
-        return;
-      }
-      const params = new URLSearchParams(location.search);
-      const isRegister = params.get('register') === '1';
-      const isSignIn = params.get('signin') === '1';
-      let role = localStorage.getItem('pending_google_role');
-      // Check if profile already exists
-      const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-      if (isRegister) {
-        if (profile && profile.role) {
-          localStorage.setItem('last_google_role', profile.role);
-          alert('You are already registered with this Google account as ' + profile.role + '.');
-          // Redirect to dashboard
-          switch (profile.role) {
-            case 'donor':
-              navigate('/donor');
-              break;
-            case 'beneficiary':
-              navigate('/beneficiary');
-              break;
-            case 'ngo':
-              navigate('/ngo');
-              break;
-            default:
-              navigate('/');
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", session.user.id)
+            .maybeSingle();
+
+          if (profileError) throw profileError;
+
+          if (profile?.role && ROLE_ROUTES[profile.role]) {
+            navigate(ROLE_ROUTES[profile.role], { replace: true });
+          } else {
+            // New user — go to login, role modal will appear
+            navigate("/login", { replace: true });
           }
-          return;
+        } catch (err: any) {
+          setErrorMsg(err.message || "Failed to load your profile.");
+          setStage("error");
         }
-        // If not registered, upsert
-        if (role && user.user_metadata?.role !== role) {
-          const { error: metaError } = await supabase.auth.updateUser({ data: { ...user.user_metadata, role } });
-          if (metaError) console.error('USER METADATA UPDATE failed →', metaError);
-        }
-        console.log('pending_google_role', role);
-        const { error: upsertErr } = await supabase.from('profiles').upsert({
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.name || user.user_metadata?.full_name || '',
-          role,
-        });
-        if (upsertErr) console.error('UPSERT failed →', upsertErr);
-        if (role) localStorage.setItem('last_google_role', role);
-      } else if (isSignIn) {
-        // Sign in: check if user is registered
-        if (!profile || !profile.role) {
-          alert('No account found for this Google user. Please sign up first.');
-          navigate('/login');
-          return;
-        }
-        localStorage.setItem('last_google_role', profile.role);
-        role = profile.role;
-      } else {
-        // Not registration, just sign in
-        if (profile && profile.role) {
-          localStorage.setItem('last_google_role', profile.role);
-          role = profile.role;
-        } else {
-          // fallback to user metadata
-          role = user.user_metadata?.role;
-        }
+      } else if (event === "SIGNED_OUT") {
+        navigate("/login", { replace: true });
       }
-      // Redirect to dashboard
-      switch (role) {
-        case 'donor':
-          navigate('/donor');
-          break;
-        case 'beneficiary':
-          navigate('/beneficiary');
-          break;
-        case 'ngo':
-          navigate('/ngo');
-          break;
-        default:
-          navigate('/');
-      }
+    });
+
+    // Fallback: if onAuthStateChange never fires (e.g. direct page load
+    // with no hash/code), redirect after a reasonable timeout
+    const timeout = setTimeout(() => {
+      setErrorMsg("Sign-in timed out. Please try again.");
+      setStage("error");
+    }, 8000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
     };
-    handleCallback();
-  }, [navigate, location]);
+  }, [navigate]);
+
+  // Auto-redirect on error after a short delay
+  useEffect(() => {
+    if (stage !== "error") return;
+    const timer = setTimeout(() => navigate("/login", { replace: true }), 3000);
+    return () => clearTimeout(timer);
+  }, [stage, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-lg font-semibold text-gray-700">Signing you in...</div>
+    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center gap-4 px-4">
+      {stage === "error" ? (
+        <div className="flex flex-col items-center gap-3 max-w-sm text-center">
+          <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+            <span className="text-red-400 text-xl">!</span>
+          </div>
+          <p className="text-red-300 text-sm font-medium">{errorMsg}</p>
+          <p className="text-gray-500 text-xs">Redirecting to login...</p>
+        </div>
+      ) : (
+        <>
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-400 text-sm">Completing sign-in...</p>
+        </>
+      )}
     </div>
   );
 };
